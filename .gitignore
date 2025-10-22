@@ -1,0 +1,34 @@
+*.Rdata
+*.RData
+*.Rda
+*.rda
+*.Rhistory
+*.docx
+*.DS_Store
+*.xlsx
+*.pptx
+*.Rapp.history
+
+*.log
+*.aux
+*.blg
+*.synctex.gz
+*.out 
+*.lua
+*.yml
+*.fls
+*.fdb_latexmk
+
+/archive
+/notposting
+
+# Quarto Detritus
+*_files
+*_cache
+
+# Mac Detritus
+*.DS_Store
+
+data/zweifel2021
+
+
