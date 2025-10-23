@@ -1,7 +1,13 @@
 library(ggplot2)
 library(lubridate)
-wd <- '/home/victor/projects/intrareprogrowth'
+wd <- '/home/victor/projects/intratradeoff'
 
+# sites
+sites <- read.table(file.path(wd, 'data/zweifel2021', 'Zweifel-etal_2021_site-info.tab'), skip = 20, sep = '\t', header = TRUE)
+sites_genus <- unique(sites[c('Site', 'Latitude', 'Longitude', 'Genus')])
+write.csv(sites_genus, file.path(wd, 'output', 'sites_genus.csv'))
+
+# dendrometer data
 years <- 1997:2018
 dat <- lapply(years, function(y){
   s <- ifelse(y > 2010, 25, ifelse(y == 2010, 24, 23))
@@ -31,8 +37,9 @@ ggplot(data = mean_growthrate, aes(x = week, y = growth_rate)) +
   # geom_point() +
   geom_bar(stat = "identity")
 
-# Look at one species!
-mean_growthrate_perspecies <- data.frame()
+# Look at species!
+mean_growthrate_perspecies_byweek <- data.frame()
+mean_growthrate_perspecies_bymonth <- data.frame()
 for(sp in unique(dat$species)){
   if(sp %in% c('Sorbus aria', 'Que', 'Larix decidua')){next}
   subset_sp <- na.omit(dat[dat$species == sp,])
@@ -42,21 +49,44 @@ for(sp in unique(dat$species)){
   subset_sp <- merge(subset_sp, count_obs)
   mean_growthrate <- aggregate(growth_rate ~ week + year, FUN = mean, data = subset_sp[subset_sp$nobs > 300,])
   mean_growthrate$species <- sp
-  mean_growthrate_perspecies <- rbind(mean_growthrate_perspecies, mean_growthrate)
+  mean_growthrate_perspecies_byweek <- rbind(mean_growthrate_perspecies_byweek, mean_growthrate)
+  
+  subset_sp$month <- month(subset_sp$date)
+  mean_growthrate <- aggregate(growth_rate ~ month + year, FUN = mean, data = subset_sp[subset_sp$nobs > 300,])
+  mean_growthrate$species <- sp
+  mean_growthrate_perspecies_bymonth <- rbind(mean_growthrate_perspecies_bymonth, mean_growthrate)
+  
 }
 
-mean_growthrate_perspecies$week_date <- lubridate::ymd(mean_growthrate_perspecies$year) + lubridate::weeks(mean_growthrate_perspecies$week - 1)
+mean_growthrate_perspecies_byweek$week_date <- lubridate::ymd(paste0('2000', '-01-01')) + lubridate::weeks(mean_growthrate_perspecies_byweek$week - 1)
 
-ggplot(data = mean_growthrate_perspecies, aes(x = week_date, y = growth_rate)) +
-  facet_wrap(~species) +
-  geom_bar(stat = "identity") +
+round_date(mean_growthrate_perspecies$week_date, "1 month")
+
+
+
+ggplot(data = mean_growthrate_perspecies_byweek[mean_growthrate_perspecies_byweek$year%in% c(2015, 2016, 2017),], aes(x = week_date, y = growth_rate)) +
+  facet_grid(year~species) +
+  geom_bar(stat = "identity", fill = 'grey70') +
   scale_x_date(date_breaks = "1 month", date_labels = "%m") +
   geom_segment(data = species_cycle, aes(x = start_fruitmat, xend = end_fruitmat, y = 0.8, yend = 0.8),
-               linewidth = 2, col = 'darkorange') +
-  theme_classic()
+               linewidth = 1.5, col = 'darkorange') +
+  theme_classic() +
+  theme(axis.text.x = element_text(size = 7))
 
 species_cycle <-
   data.frame(species = 'Fagus sylvatica',
              start_fruitmat = as.Date("2000-07-01"), end_fruitmat = as.Date("2000-09-01"))
+
+mean_growthrate_perspecies_bymonth$month_date <- lubridate::ymd(paste0('2000', '-', mean_growthrate_perspecies_bymonth$month, '-01'))
+
+ggplot(data = mean_growthrate_perspecies_bymonth[mean_growthrate_perspecies_bymonth$year%in% c(2015, 2016, 2017),], aes(x = month_date, y = growth_rate)) +
+  facet_grid(year~species) +
+  geom_bar(stat = "identity", fill = 'grey70') +
+  scale_x_date(date_breaks = "1 month", date_labels = "%m") +
+  geom_segment(data = species_cycle, aes(x = start_fruitmat, xend = end_fruitmat, y = 0.8, yend = 0.8),
+               linewidth = 1.5, col = 'darkorange') +
+  theme_classic() +
+  theme(axis.text.x = element_text(size = 7))
+
 
                
