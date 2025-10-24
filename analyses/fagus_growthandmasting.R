@@ -137,9 +137,12 @@ dendromast_figure <- ggplot(data = growth_masting) +
   facet_grid(id_plot ~ year) +
   geom_line(aes(x = week, y = growth_rate), col = 'black', linewidth = 0.8) + 
   geom_line(aes(x = week, y = growth_rate, col = mast_mean), linewidth = 0.6) + 
-  scale_color_distiller(palette = "Reds", direction = 1,  na.value = "grey80") +
+  scale_color_distiller(palette = "Reds", direction = 1,  na.value = "grey80", name = 'Masting state') +
   theme_classic() +
   labs(x = 'Week', y = "Growth rate (µm/h)") +
   theme(strip.background = element_blank(), strip.text.y = element_text(size = 5),
-        axis.text = element_text(size = 5))
+        axis.text.y = element_text(size = 5), axis.text.x = element_text(size = 7),
+        legend.direction = "horizontal", legend.position = 'inside',
+        legend.position.inside = c( 0.15, 0.05), legend.title.position = 'top',
+        legend.key.height = unit(0.2, 'cm'))
 ggsave(dendromast_figure, filename = file.path(wd, 'analyses/figures', 'dendromast.pdf'), width = 210, height = 297, units = "mm")
