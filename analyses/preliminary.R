@@ -5,7 +5,7 @@ wd <- '/home/victor/projects/intratradeoff'
 # sites
 sites <- read.table(file.path(wd, 'data/zweifel2021', 'Zweifel-etal_2021_site-info.tab'), skip = 20, sep = '\t', header = TRUE)
 sites_genus <- unique(sites[c('Site', 'Latitude', 'Longitude', 'Genus')])
-write.csv(sites_genus, file.path(wd, 'output', 'sites_genus.csv'))
+# write.csv(sites_genus, file.path(wd, 'output', 'sites_genus.csv'))
 
 # dendrometer data
 years <- 1997:2018
@@ -36,6 +36,16 @@ names(mean_growthrate)[1] <- 'week'
 ggplot(data = mean_growthrate, aes(x = week, y = growth_rate)) +
   # geom_point() +
   geom_bar(stat = "identity")
+
+# Look at data per site 
+sites_summary <- data.frame()
+for(s in unique(dat$id_plot)){
+  cat(paste0(s, '\n'))
+  subset_site <-  na.omit(dat[dat$id_plot == s,])
+  print(table(subset_site[,c('species')]))
+}
+# Laegeren_FF and Laegeren_Hut are the clear winners!
+
 
 # Look at species!
 mean_growthrate_perspecies_byweek <- data.frame()
